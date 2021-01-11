@@ -151,12 +151,12 @@ spec:
           - |
             export cond=$(echo ${host_IP}|awk -F . '{print $((3))}')
             if [ $cond -ge 96 ] && [ $cond -lt 128 ]; then 
-              export dst=10.10.122.101; elif [ $cond -ge 128 ] && [ $cond -lt 160 ]; then 
-              export dst=10.10.158.126; elif [ $cond -ge 0 ] && [ $cond -lt 32 ]; then 
-              export dst=10.10.122.101; elif [ $cond -ge 32 ] && [ $cond -lt 64 ]; then 
-              export dst=10.10.158.12; elif [ $cond -ge 64 ] && [ $cond -lt 96 ];then 
-              export dst=110.10.164.176; else export dst=10.10.164.176; fi
-            echo $dst 'ae5807c212c324c0c84798f4d8574126-9cd49ff61e35f984.elb.us-west-2.amazonaws.com'>>/etc/hosts
+              export dst=10.x.122.101; elif [ $cond -ge 128 ] && [ $cond -lt 160 ]; then 
+              export dst=10.x.158.126; elif [ $cond -ge 0 ] && [ $cond -lt 32 ]; then 
+              export dst=10.x.122.101; elif [ $cond -ge 32 ] && [ $cond -lt 64 ]; then 
+              export dst=10.x.158.12; elif [ $cond -ge 64 ] && [ $cond -lt 96 ];then 
+              export dst=10.x.164.176; else export dst=10.x.164.176; fi
+            echo $dst 'xxxxx.elb.<region>.amazonaws.com'>>/etc/hosts
             /node-cache -localip 169.254.20.10,172.20.0.10 -conf /etc/Corefile -upstreamsvc kube-dns-upstream
         securityContext:
           privileged: true
