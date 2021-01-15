@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: squid
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: squid-configmap
+  namespace: squid
+data:
+  squid.conf: |
+    http_port 0.0.0.0:3128
+    http_access allow all
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: squid
+    namespace: squid
+    labels:
+      app: squid
+spec:
+    replicas: 3
+    selector:
+      matchLabels:
+        app: squid
+    template:
+        metadata:
+            labels:
+                app: squid
+        spec:
+            # nodeSelector:
+            #   kubernetes.io/os: linux
+            #   node-role.kubernetes.io: nat
+            affinity:
+              nodeAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  nodeSelectorTerms:
+                  - matchExpressions:
+                    - key: node-role.kubernetes.io
+                      operator: In
+                      values:
+                      - nat
+              podAntiAffinity:
+                preferredDuringSchedulingIgnoredDuringExecution:
+                - podAffinityTerm:
+                    labelSelector:
+                      matchExpressions:
+                      - key: app
+                        operator: In
+                        values:
+                        - squid
+                    topologyKey: failure-domain.beta.kubernetes.io/zone
+                  weight: 1
+            containers:
+            - image: sameersbn/squid
+              name: squid
+              ports:
+              - containerPort: 3128
+                protocol: TCP
+              volumeMounts:
+              - name: squid-config-volume
+                mountPath: /etc/squid/squid.conf
+                subPath: squid.conf
+              resources:
+                limits:
+                  cpu: "500m"
+                  memory: "3000Mi"
+                requests:
+                  cpu: "500m"
+                  memory: "3000Mi"
+            volumes:
+            - name: squid-config-volume
+              configMap:
+                name: squid-configmap
+                items:
+                - key: squid.conf
+                  path: squid.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: squid
+  namespace: squid
+  labels:
+    app: squid
+  annotations:
+   service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+spec:
+  ports:
+  - port: 80
+    targetPort: 3128
+    protocol: TCP
+  selector:
+    app: squid
+  externalTrafficPolicy: Local
+  type: LoadBalancer
