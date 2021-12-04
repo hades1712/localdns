@@ -11,6 +11,11 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/coredns/coredns)](https://goreportcard.com/report/coredns/coredns)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1250/badge)](https://bestpractices.coreinfrastructure.org/projects/1250)
 
+NodeLocal DNSCache 通过在集群节点上作为 DaemonSet 运行 dns 缓存代理来提高集群 DNS 性能。 在当今的体系结构中，处于 ClusterFirst DNS 模式的 Pod 可以连接到 kube-dns serviceIP 进行 DNS 查询。 通过 kube-proxy 添加的 iptables 规则将其转换为 kube-dns/CoreDNS 端点。 借助这种新架构，Pods 将可以访问在同一节点上运行的 dns 缓存代理，从而避免了 iptables DNAT 规则和连接跟踪。 本地缓存代理将查询 kube-dns 服务以获取集群主机名的缓存缺失（默认为 cluster.local 后缀）。
+
+LocalDNS 是对CoreDNS的重新编译，因为LocalDNS 需要作为Demonset 运行在每一台机器宿主机，为了尽量节省资源开销，舍弃了CoreDNS中的很多功能插件，本次因为需要使用hosts plugin插件，同时尽量减少localdns的资源开销，对coredns进行重新编译并打包镜像（参考makefile,makefile.dokcker）, 同时对localdns 进行注入配置，参考nodelocaldns_new.yaml, 在EKS 使用来匹配NLB 的网络流量，请参考proxy.yaml
+
+CoreDNS 是K8S中用来解析DNS 服务器的组件：
 CoreDNS is a DNS server/forwarder, written in Go, that chains [plugins](https://coredns.io/plugins).
 Each plugin performs a (DNS) function.
 
